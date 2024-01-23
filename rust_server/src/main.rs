@@ -1,8 +1,40 @@
+mod worlddata;
+
 use tokio::net::TcpListener;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use std::collections::HashMap;
+
+struct UserData {
+    users: HashMap<String, String>
+}
+
+impl UserData {
+    fn new() -> Self {
+        UserData {
+            users: HashMap::new()
+        }
+    }
+    fn addUser(&mut self, username: &str, password: &str) {
+        self.users.insert(username.to_string(), password.to_string());
+    }
+
+    fn validate(&self, username: &str, password: &str) -> bool {
+        if let Some(stored_password) = self.users.get(username) {
+            return stored_password == password;
+        }
+        false
+    }
+
+    fn login(&self, username: &str, password: &str) -> bool {
+        self.validate(username, password)
+    }
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut user_data = UserData::new();
+    user_data.addUser("admin", "password");
+
     let listener= TcpListener::bind("127.0.0.1:5555").await?;
 
     loop {
@@ -27,7 +59,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         return
                     },
                 };
-                let response = if received_data.trim() == "new" {
+                let _response = if received_data.trim() == "new" {
                     "Starting new game...\n"
                 } else {
                     "Invalid input\n"
