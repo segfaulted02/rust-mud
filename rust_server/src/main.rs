@@ -1,33 +1,38 @@
 mod worlddata;
+mod user;
+mod events;
+
+use crate::user::*;
+use crate::worlddata::*;
+use crate::events::*;
 
 use tokio::net::TcpListener;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use std::collections::HashMap;
 
-struct UserData {
-    users: HashMap<String, String>
+pub struct UserData {
+    pub users: Vec<User>
 }
 
 impl UserData {
     fn new() -> Self {
         UserData {
-            users: HashMap::new()
+            users: Vec::new()
         }
     }
     fn addUser(&mut self, username: &str, password: &str) {
         self.users.insert(username.to_string(), password.to_string());
     }
 
-    fn validate(&self, username: &str, password: &str) -> bool {
-        if let Some(stored_password) = self.users.get(username) {
+    /*fn validate(&self, name: &str, password: &str) -> bool {
+        if let Some(stored_password) = self.users.get(name) {
             return stored_password == password;
         }
         false
-    }
+    }*/
 
-    fn login(&self, username: &str, password: &str) -> bool {
+    /*fn login(&self, username: &str, password: &str) -> bool {
         self.validate(username, password)
-    }
+    }*/
 }
 
 #[tokio::main]
