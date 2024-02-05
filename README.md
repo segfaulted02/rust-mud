@@ -13,7 +13,7 @@ cargo run
 
 Then, open a new terminal (or PuTTY if you're old) and connect to the server using netcat:
 ```
-nc 127.0.0.1:5555
+nc 127.0.0.1 5555
 ```
 
 Once connected, go ahead and play!
