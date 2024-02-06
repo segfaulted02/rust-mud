@@ -107,7 +107,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 }
                             },
                             "command" => {
-
+                                // handle user commands, such as "interact", "attack", etc.
                             },
                             _ => {
                                 let response = "Unknown command.";
@@ -120,32 +120,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         return;
                     },
                 }
-                /*
-                let n = match socket.read(&mut buf).await {
-                    Ok(n) if n == 0 => return,
-                    Ok(n) => n,
-                    Err(e) => {
-                        eprintln!("error in reading socket; err = {:?}", e);
-                        return
-                    }
-                };
-                let received_data = match std::str::from_utf8(&buf[..n]) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        eprint!("Error: {:?}", e);
-                        return
-                    },
-                };
-                let _response = if received_data.trim() == "new" {
-                    "Starting new game...\n"
-                } else {
-                    "Invalid input\n"
-                };
-                if let Err(e) = socket.write_all(&buf[0..n]).await {
-                    eprintln!("error in writing to socket; err = {:?}", e);
-                    return;
-                }
-            */
             }
         });
     }
