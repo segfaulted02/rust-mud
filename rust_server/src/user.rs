@@ -1,9 +1,9 @@
-use crate::events::*;
 use crate::worlddata::*;
 
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fmt;
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct User {
     pub name: String,
     pub user_id: i32,

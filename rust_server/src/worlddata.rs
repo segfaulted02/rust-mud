@@ -1,6 +1,7 @@
 use crate::events::*;
 use crate::user::*;
 
+use serde::{Deserialize, Serialize};
 use core::fmt;
 use std::collections::HashMap;
 
@@ -36,14 +37,14 @@ impl Room {
         self.entities.retain(|entity| entity.name != entity.name);
     }
 
-    pub fn add_item(&self, item: Item) {
+    pub fn add_item(&mut self, item: Item) {
         self.items.push(item);
     }
     /*
     Similar to remove_entity, this removes all items under a certain name from the room.
     Ideally, will be changed.
     */
-    pub fn remove_item(&self, item: Item) {
+    pub fn remove_item(&mut self, item: Item) {
         self.items.retain(|item| item.name != item.name)
     }
 }
@@ -71,7 +72,7 @@ impl Entity {
         format!("{} attacked {}.", user_name, self.name)
     }
 }
-
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Item {
     pub name: String,
     pub description: String,

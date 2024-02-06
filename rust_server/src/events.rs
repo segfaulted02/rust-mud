@@ -3,7 +3,7 @@ use crate::worlddata::*;
 
 pub fn first_room(worlddata: &mut WorldData) {
     // Room structure definition for the initial room
-    let mut starting_room = Room {
+    let mut starting_room: Room = Room {
         name: "Beginnings".to_string(),
         description: "You wake up in a damp, cold room. Your mind is foggy, and you are sitting, your back against the wall.
         You slowly stand up, collecting yourself, and notice a rusty sword, with a chipped blade, on the ground.
@@ -32,7 +32,7 @@ pub fn first_room(worlddata: &mut WorldData) {
     starting_room.add_item(rusty_sword);
     starting_room.add_item(hidden_key);
 
-    worlddata.add_room(starting_room.name, starting_room)
+    worlddata.add_room(starting_room.name.clone(), starting_room)
 }
 
 // More rooms can be added ...
