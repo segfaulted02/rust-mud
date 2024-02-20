@@ -16,17 +16,17 @@ pub fn first_room(worlddata: &mut WorldData) {
     let rusty_sword = Item {
         name: "Rusty Sword".to_string(),
         description: "A rusty sword, with a chipped blade.".to_string(),
-        benefit: "None".to_string(),
+        item_type: ItemType::Weapon,
+        value: 2,
         weight: 5.0,
-        pickup: true
     };
 
     let hidden_key = Item {
         name: "Hidden Key".to_string(),
         description: "A small key, appearing to fit the keyhole in the cold, damp room.".to_string(),
-        benefit: "Open Door".to_string(),
+        item_type: ItemType::Other,
+        value: 0,
         weight: 0.1,
-        pickup: true
     };
 
     starting_room.add_item(rusty_sword);

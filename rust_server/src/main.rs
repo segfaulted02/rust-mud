@@ -1,10 +1,12 @@
 mod worlddata;
 mod user;
 mod events;
+mod actions;
 
 use crate::user::*;
 use crate::worlddata::*;
 use crate::events::*;
+use crate::actions::*;
 
 use std::collections::HashMap;
 use std::error::Error;
@@ -13,46 +15,10 @@ use tokio::net::TcpListener;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use serde::{Serialize, Deserialize};
 
-#[derive(Clone)]
-pub struct UserData {
-    // Maps username to User object
-    pub users: HashMap<String, User>
-}
-
-impl UserData {
-    fn new() -> Self {
-        UserData {
-            users: HashMap::new()
-        }
-    }
-    fn add_user(&mut self, user: User) {
-        self.users.insert(user.name.clone(), user);
-    }
-
-    fn validate(&self, name: &str, password: &str) -> bool {
-        if let Some(user) = self.users.get(name) {
-            return user.password == password;
-        }
-        false
-    }
-
-    // asynchronous because file I/O operations are blocking
-    async fn load_user(&self, username: &str) -> Result<User, Box<dyn Error>> {
-        let file_path = format!("./user_data/{}.json", username);
-        let mut file = File::open(file_path).await?;
-
-        let mut contents = String::new();
-        file.read_to_string(&mut contents).await?;
-
-        let user: User = serde_json::from_str(&contents)?;
-
-        Ok(user)
-    }
-}
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut user_data: UserData = UserData::new();
+    let mut world_data: WorldData = WorldData::new();
 
     user_data.add_user(User {
         name: "admin".to_string(),
@@ -78,6 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let (mut socket, _) = listener.accept().await?;
 
         let user_data_clone = user_data.clone();
+        let mut world_data_clone = world_data.clone();
 
         tokio::spawn(async move {
             let mut buf: [u8; 1024] = [0; 1024];
@@ -106,8 +73,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     socket.write_all(response.as_bytes()).await.unwrap();
                                 }
                             },
-                            "command" => {
-                                // handle user commands, such as "interact", "attack", etc.
+                            "attack" if !args.is_empty() => {
+                                let entity_name = args[0];
+                                if let Some(username) = &logged_in_user {
+                                    if let Some(user) = user_data_clone.get_user(username) {
+                                        let room_id = derive_room_id_from_user(user);
+                                        match perform_attack(Some(username.clone()), entity_name, &mut world_data_clone, &user_data_clone) {
+                                            Ok(_) => {
+                                                let response = "Attack successful.";
+                                                socket.write_all(response.as_bytes()).await.unwrap();
+                                            },
+                                            Err(e) => {
+                                                let response = format!("Attack failed: {}", e);
+                                                socket.write_all(response.as_bytes()).await.unwrap();
+                                            }
+                                        }
+                                    } else {
+                                        let response = "User not found.";
+                                        socket.write_all(response.as_bytes()).await.unwrap();
+                                    }
+                                } else {
+                                    let response = "You must be logged in to attack.";
+                                    socket.write_all(response.as_bytes()).await.unwrap();
+                                }
                             },
                             _ => {
                                 let response = "Unknown command.";

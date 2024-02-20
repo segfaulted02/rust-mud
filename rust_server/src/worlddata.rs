@@ -4,24 +4,33 @@ use crate::user::*;
 use serde::{Deserialize, Serialize};
 use core::fmt;
 use std::collections::HashMap;
+use std::fmt::Display;
 
+#[derive(Clone)]
 pub struct WorldData {
     pub rooms: HashMap<String, Room>
 }
 
 impl WorldData {
+    pub fn new() -> Self {
+        Self { rooms: HashMap::new() }
+    }
     // functions to create and remove rooms
     pub fn add_room(&mut self, name: String, room: Room) {
         self.rooms.insert(name, room);
     }
+    pub fn get_room_by_completion(&mut self, room_id: &str) -> Option<&mut Room> {
+        self.rooms.get_mut(room_id)
+    }
 }
 
+#[derive(Clone)]
 pub struct Room {
     pub name: String,
     pub description: String,
     pub exits: Vec<Direction>,
     pub items: Vec<Item>,
-    pub entities: Vec<Entity>
+    pub entities: Vec<Entity>,
 }
 
 impl Room {
@@ -49,6 +58,7 @@ impl Room {
     }
 }
 
+#[derive(Clone)]
 pub enum Direction {
     North,
     East,
@@ -56,6 +66,7 @@ pub enum Direction {
     West
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Entity {
     pub name: String,
     pub health: i32,
@@ -65,22 +76,50 @@ pub struct Entity {
 }
 
 impl Entity {
-    pub fn interact(&self, user_name: &str) -> String {
-        format!("{} interacted with {}", user_name, self.name)
+    pub fn new(name: &str, health: i32, damage: i32, killable: bool, dialogue: &str) -> Self {
+        Self {
+            name: name.to_string(),
+            health,
+            damage,
+            killable,
+            dialogue: dialogue.to_string(),
+        }
     }
-    pub fn attack(&self, user_name: &str) -> String {
-        format!("{} attacked {}.", user_name, self.name)
+
+    pub fn interact(&self, target: &mut Entity) -> String {
+        format!("{:?} interacted with {}", target, self.name)
+    }
+
+    pub fn attack(&mut self, target: &mut Entity) -> Result<(), String> {
+        if !self.killable {
+            return Err(format!("{} cannot be attacked", self.name));
+        }
+
+        println!("{} attacks {} for {} damage.", self.name, target.name, self.damage);
+        target.health -= self.damage;
+
+        if target.health <= 0 && target.killable {
+            return Err(format!("{} has been defeated!", target.name));
+        } else {
+            return Err(format!("Unknown error"));
+        }
     }
 }
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Item {
     pub name: String,
     pub description: String,
-    //will likely change "benefit" to be not a string, but rather hold another type of object,
-    //so that the benefits can be quantified better (more inventory space, more damage, etc.)
-    pub benefit: String,
+    pub item_type: ItemType,
+    pub value: i32,
     pub weight: f32,
-    pub pickup: bool
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum ItemType {
+    Weapon,
+    Armor,
+    Other,
 }
 
 /*
@@ -89,6 +128,6 @@ Quite ideal to print out the inventory effectively.
 */
 impl fmt::Display for Item {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}: {}, Benefit: {}, Weight: {}, Pickup: {}", self.name, self.description, self.benefit, self.weight, self.pickup)
+        write!(f, "{}: {}, Type: {:?}, Value: {}, Weight: {}", self.name, self.description, self.item_type, self.value, self.weight)
     }
 }
