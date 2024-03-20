@@ -27,5 +27,5 @@ attack <entity> #attack an entity/player
 move <direction> #moves into a different room
 inventory #opens inventory
 equip <item> #equips weapon
-exit #exits the game
+logout #exits the game
 ```
